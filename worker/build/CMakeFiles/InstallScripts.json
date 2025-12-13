@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/wiseyxd/Projects/distributed-files-compression/worker/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
