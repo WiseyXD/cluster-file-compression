@@ -25,6 +25,7 @@ string huffmanEncoding(string s) {
   for (char c : s) {
     freq[c]++;
   }
+  // null
 
   return s;
 }
