@@ -20,7 +20,7 @@ struct Compare {
 };
 
 void generateCode(Node *root, string path, unordered_map<char, string> &codes) {
-  if (!root) {
+  if (!root || root == nullptr) {
     return;
   }
   if (!root->right && !root->left) {
@@ -92,7 +92,7 @@ string huffmanEncoding(string s) {
 }
 
 int main() {
-  string ex = "aryan";
+  string ex = "pranav";
   string ans = huffmanEncoding(ex);
   cout << "Encoded :" << ans << endl;
   return 0;
