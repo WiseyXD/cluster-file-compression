@@ -1,3 +1,0 @@
-/home/wiseyxd/Projects/distributed-files-compression/worker/build/CMakeFiles/app.dir
-/home/wiseyxd/Projects/distributed-files-compression/worker/build/CMakeFiles/edit_cache.dir
-/home/wiseyxd/Projects/distributed-files-compression/worker/build/CMakeFiles/rebuild_cache.dir

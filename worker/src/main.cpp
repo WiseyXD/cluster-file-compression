@@ -7,34 +7,93 @@
 #include <vector>
 
 using namespace std;
-vector<pair<char, int>> frequencyTable;
 
-std::unordered_map<char, int> freq;
+struct Node {
+  char ch;
+  int freq;
+  Node *left;
+  Node *right;
+  Node(char c, int f) : ch(c), freq(f), left(nullptr), right(nullptr) {}
+};
+struct Compare {
+  bool operator()(Node *a, Node *b) { return a->freq > b->freq; };
+};
+
+void generateCode(Node *root, string path, unordered_map<char, string> &codes) {
+  if (!root) {
+    return;
+  }
+  if (!root->right && !root->left) {
+    codes[root->ch] = path.empty() ? "0" : path;
+    return;
+  }
+
+  generateCode(root->left, path + "0", codes);
+  generateCode(root->right, path + "1", codes);
+};
+
+void deleteTree(Node *node) {
+  if (node == nullptr) {
+    return;
+  }
+  deleteTree(node->left);
+  deleteTree(node->right);
+  delete node; // Delete the current node after its children
+}
 
 string huffmanEncoding(string s) {
+
+  std::unordered_map<char, int> freq;
+  priority_queue<Node *, vector<Node *>, Compare> min_heap;
+
   // remove whitespaces
-  // count the frequency in an pair of array or map
-
-  // noob worker
-  priority_queue<int, vector<int>, greater<int>> min_heap;
-
   s.erase(std::remove_if(s.begin(), s.end(),
                          [](unsigned char c) { return std::isspace(c); }),
           s.end());
 
-  for (char c : s) {
+  cout << s << endl;
+
+  // count the frequency in an pair of array or map
+  for (char &c : s) {
     freq[c]++;
   }
-  // null
+  for (auto &it : freq) {
+    min_heap.push(new Node(it.first, it.second));
+  }
 
-  return s;
+  while (min_heap.size() > 1) {
+    Node *left = min_heap.top();
+    min_heap.pop();
+
+    Node *right = min_heap.top();
+    min_heap.pop();
+
+    Node *parent = new Node('\0', right->freq + left->freq);
+    parent->left = left;
+    parent->right = right;
+    min_heap.push(parent);
+  }
+
+  Node *root = min_heap.top();
+
+  // generate codes
+  unordered_map<char, string> codes;
+  generateCode(root, "", codes);
+
+  // encoded string
+  string encoded_message;
+  for (char c : s) { // Iterate through the original input string
+    cout << c << " : " << codes[c] << endl;
+    encoded_message += codes[c];
+  }
+
+  deleteTree(root);
+  return encoded_message;
 }
 
 int main() {
-  string ex = "binomial coeffecient";
+  string ex = "aryan";
   string ans = huffmanEncoding(ex);
-  for (const auto p : freq) {
-    std::cout << p.first << " : " << p.second << "\n";
-  }
+  cout << "Encoded :" << ans << endl;
   return 0;
 }
