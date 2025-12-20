@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 3.25)
 
 project(app LANGUAGES CXX)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 
 Include(FetchContent)
+enable_testing()
 
 FetchContent_Declare(
   Catch2
@@ -12,7 +15,8 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
-add_executable(tests ./src/tests/test.cpp)
+
+add_executable(tests ./src/tests/test.cpp ./src/core/encoding.cpp)
 
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
 

@@ -35,12 +35,14 @@ a.out
 *.dSYM/
 *.app/
 
+
 # =========================
 # IDE / Editor
 # =========================
 .vscode/
 .idea/
 .vs/
+.cache/
 
 # CLion
 cmake-build-*/

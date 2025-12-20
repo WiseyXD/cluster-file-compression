@@ -1,11 +1,12 @@
 #!/bin/bash
 set -e
 
-mkdir -p build
-cd build
-cmake .. -DCMAKE_BUILD_TYPE=Debug
-make
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build
 
-echo "---- Running binary ----"
-./app
+echo "---- Running tests ----"
+ctest --test-dir build --output-on-failure
+
+echo "---- Running app ----"
+./build/app
 
