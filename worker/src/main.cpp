@@ -1,4 +1,4 @@
-#include "encoding.hpp"
+#include "./core/encoding.hpp"
 #include <iostream>
 
 int main() {
