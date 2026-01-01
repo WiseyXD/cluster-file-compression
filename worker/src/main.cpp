@@ -1,21 +1,26 @@
-#include "./core/decoding.hpp" // Include your new decoding file
-#include "./core/encoding.hpp"
-#include "./core/file_handler.hpp"
-#include "./core/types.hpp"
+#include "core/decoding.hpp"
+#include "core/encoding.hpp"
+#include "core/stats.hpp"
 #include <iostream>
 
 int main() {
-  std::string input = "huffman compression works";
+  std::string input = "This is a long string intended to demonstrate real "
+                      "bit-level Huffman compression.";
 
-  // Encode
   CompressedData compressed = huffmanEncoding(input);
-  saveToFile("compressed.huff", compressed);
+  CompressionStats stats = getStats(compressed);
 
-  // Load & Decode
-  CompressedData loaded;
-  loadFromFile("compressed.huff", loaded);
-  std::string output = huffmanDecoding(loaded);
+  std::cout << "Original Size: " << stats.originalBytes << " bytes"
+            << std::endl;
+  std::cout << "Compressed Size (including metadata): " << stats.compressedBytes
+            << " bytes" << std::endl;
+  std::cout << "Space Saving: " << stats.spaceSaving << "%" << std::endl;
 
-  std::cout << "Original: " << input << "\nDecoded: " << output << std::endl;
+  std::string decoded = huffmanDecoding(compressed);
+  if (decoded == "Thisisalongstringintendedtodemonstraterealbit-"
+                 "levelHuffmancompression.") {
+    std::cout << "Decoded successfully!" << std::endl;
+  }
+
   return 0;
 }

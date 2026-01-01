@@ -1,37 +1,39 @@
 #include "decoding.hpp"
 
 std::string huffmanDecoding(const CompressedData &data) {
-  if (data.totalBitCount == 0 || data.freqTable.empty())
+  if (data.originalSize == 0)
     return "";
 
   Node *root = buildHuffmanTree(data.freqTable);
   std::string decoded = "";
 
-  // --- CRITICAL FIX FOR SINGLE CHARACTER CASE ---
+  // Single character edge case
   if (!root->left && !root->right) {
-    // There is only one unique character.
-    // We know how many times it repeats from the frequency table.
-    decoded = std::string(data.freqTable.begin()->second, root->ch);
+    decoded = std::string(data.originalSize, root->ch);
     deleteTree(root);
     return decoded;
   }
-  // ----------------------------------------------
 
   Node *curr = root;
-  uint32_t processedBits = 0;
+  uint32_t charsDecoded = 0;
+  uint32_t bitsProcessed = 0;
+
   for (uint8_t byte : data.packedBytes) {
-    for (int i = 0; i < 8; ++i) {
-      if (processedBits >= data.totalBitCount)
+    for (int i = 7; i >= 0; --i) {
+      if (charsDecoded >= data.originalSize ||
+          bitsProcessed >= data.totalBitCount)
         break;
 
-      bool bit = (byte >> (7 - i)) & 1;
+      // Extract bit at position i (from MSB to LSB)
+      bool bit = (byte >> i) & 1;
       curr = bit ? curr->right : curr->left;
 
       if (!curr->left && !curr->right) {
         decoded += curr->ch;
+        charsDecoded++;
         curr = root;
       }
-      processedBits++;
+      bitsProcessed++;
     }
   }
 

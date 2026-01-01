@@ -21,6 +21,7 @@ set(CORE_SOURCES
     ./src/core/decoding.cpp
     ./src/core/bit_packer.cpp
     ./src/core/file_handler.cpp
+    ./src/core/stats.cpp
 
 )
 

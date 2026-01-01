@@ -32,25 +32,48 @@ void trim(std::string &s) {
 
 CompressedData huffmanEncoding(std::string s) {
   CompressedData result;
-
+  // Standard cleaning as per your earlier requirements
   trim(s);
 
   if (s.empty())
     return result;
 
+  result.originalSize = s.length();
   for (char c : s)
     result.freqTable[c]++;
 
   Node *root = buildHuffmanTree(result.freqTable);
   std::map<char, std::string> codes;
+  // Assuming generateCode is accessible here
   generateCode(root, "", codes);
 
-  std::string bitString = "";
-  for (char c : s)
-    bitString += codes[c];
+  // Bit Packing Logic
+  uint8_t currentByte = 0;
+  int bitPos = 0;
 
-  result.totalBitCount = bitString.length();
-  result.packedBytes = packBits(bitString);
+  for (char c : s) {
+    const std::string &code = codes[c];
+    for (char bit : code) {
+      // Shift current bits left and add new bit at LSB
+      currentByte <<= 1;
+      if (bit == '1')
+        currentByte |= 1;
+      bitPos++;
+
+      if (bitPos == 8) {
+        result.packedBytes.push_back(currentByte);
+        currentByte = 0;
+        bitPos = 0;
+      }
+      result.totalBitCount++;
+    }
+  }
+
+  // Flush remaining bits in the partial last byte
+  if (bitPos > 0) {
+    currentByte <<= (8 - bitPos); // Align bits to MSB
+    result.packedBytes.push_back(currentByte);
+  }
 
   deleteTree(root);
   return result;
