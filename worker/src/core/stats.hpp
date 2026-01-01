@@ -1,4 +1,6 @@
 #pragma once
 #include "types.hpp"
+#include <string>
 
-CompressionStats getStats(const CompressedData &data);
+CompressionStats getStatsFromFile(const std::string &filename,
+                                  const CompressedData &data);
