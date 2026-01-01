@@ -1,5 +1,6 @@
 #pragma once
 
+#include "types.hpp"
 #include <string>
 #include <unordered_map>
 
@@ -12,4 +13,4 @@ void generateCode(Node *root, string path, unordered_map<char, string> &codes);
 
 void deleteTree(Node *node);
 
-string huffmanEncoding(string s);
+CompressedData huffmanEncoding(std::string s);

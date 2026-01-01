@@ -1,30 +1,50 @@
 #include "../core/decoding.hpp"
 #include "../core/encoding.hpp"
+#include "../core/types.hpp"
 #include <catch2/catch_test_macros.hpp>
-#include <map>
+#include <string>
 
 TEST_CASE("Huffman Encoding/Decoding Round Trip", "[huffman]") {
-  std::string input = "pranav";
 
-  // Setup metadata
-  std::map<char, int> freq;
-  for (char c : input)
-    freq[c]++;
+  SECTION("Standard string: pranav") {
+    std::string input = "pranav";
 
-  SECTION("Standard string") {
-    std::string encoded = huffmanEncoding(input);
-    std::string decoded = huffmanDecoding(encoded, freq);
+    // The new encoder returns a CompressedData object
+    CompressedData compressed = huffmanEncoding(input);
+
+    // The new decoder takes that object directly
+    std::string decoded = huffmanDecoding(compressed);
+
     REQUIRE(decoded == "pranav");
+    // Verify metadata was captured
+    REQUIRE(compressed.freqTable.at('p') == 1);
+    REQUIRE(compressed.freqTable.at('a') == 2);
   }
 
-  SECTION("Single character") {
-    std::string s = "aaaaa";
-    std::map<char, int> f = {{'a', 5}};
-    std::string encoded = huffmanEncoding(s);
-    REQUIRE(huffmanDecoding(encoded, f) == "aaaaa");
+  SECTION("Single character: aaaaa") {
+    std::string input = "aaaaa";
+    CompressedData compressed = huffmanEncoding(input);
+    std::string decoded = huffmanDecoding(compressed);
+
+    REQUIRE(decoded == "aaaaa");
+    // In a single-char case, bit count should ideally be 5 (if encoded as '0's)
+    REQUIRE(compressed.totalBitCount == 5);
   }
 
-  SECTION("Empty string") { REQUIRE(huffmanEncoding("") == ""); }
+  SECTION("Empty string") {
+    CompressedData compressed = huffmanEncoding("");
+    REQUIRE(compressed.totalBitCount == 0);
+    REQUIRE(huffmanDecoding(compressed) == "");
+  }
 }
 
-TEST_CASE("basic math") { REQUIRE(2 + 2 == 4); };
+TEST_CASE("Data Integrity", "[huffman]") {
+  SECTION("Magic bytes and versioning") {
+    CompressedData compressed = huffmanEncoding("test");
+    REQUIRE(compressed.magic[0] == 'H');
+    REQUIRE(compressed.magic[1] == 'F');
+    REQUIRE(compressed.version == 1);
+  }
+}
+
+TEST_CASE("Basic Math", "[smoke_test]") { REQUIRE(2 + 2 == 4); }

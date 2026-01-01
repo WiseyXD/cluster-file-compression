@@ -1,5 +1,7 @@
 #include "encoding.hpp"
+#include "bit_packer.hpp"
 #include "huffman_tree.hpp"
+#include "types.hpp"
 #include <algorithm>
 #include <map>
 
@@ -15,28 +17,41 @@ void generateCode(Node *root, std::string path,
   generateCode(root->right, path + "1", codes);
 }
 
-std::string huffmanEncoding(std::string s) {
-  s.erase(std::remove_if(s.begin(), s.end(),
-                         [](unsigned char c) { return std::isspace(c); }),
+void trim(std::string &s) {
+  // 1. Trim from the end (Right trim)
+  s.erase(std::find_if(s.rbegin(), s.rend(),
+                       [](unsigned char ch) { return !std::isspace(ch); })
+              .base(),
           s.end());
 
+  // 2. Trim from the start (Left trim)
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+            return !std::isspace(ch);
+          }));
+}
+
+CompressedData huffmanEncoding(std::string s) {
+  CompressedData result;
+
+  trim(s);
+
   if (s.empty())
-    return "";
+    return result;
 
-  std::map<char, int> freq;
   for (char c : s)
-    freq[c]++;
+    result.freqTable[c]++;
 
-  Node *root = buildHuffmanTree(freq);
-
+  Node *root = buildHuffmanTree(result.freqTable);
   std::map<char, std::string> codes;
   generateCode(root, "", codes);
 
-  std::string encoded_message = "";
-  for (char c : s) {
-    encoded_message += codes[c];
-  }
+  std::string bitString = "";
+  for (char c : s)
+    bitString += codes[c];
+
+  result.totalBitCount = bitString.length();
+  result.packedBytes = packBits(bitString);
 
   deleteTree(root);
-  return encoded_message;
+  return result;
 }

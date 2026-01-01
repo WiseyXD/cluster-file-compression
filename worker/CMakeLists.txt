@@ -19,6 +19,9 @@ set(CORE_SOURCES
     ./src/core/huffman_tree.cpp 
     ./src/core/encoding.cpp 
     ./src/core/decoding.cpp
+    ./src/core/bit_packer.cpp
+    ./src/core/file_handler.cpp
+
 )
 
 # --- Target 1: The Actual Program ---

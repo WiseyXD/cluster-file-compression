@@ -1,40 +1,40 @@
 #include "decoding.hpp"
-#include <map>
-#include <string>
 
-std::string huffmanDecoding(std::string encoded_message,
-                            std::map<char, int> freq) {
-  if (encoded_message.empty() || freq.empty()) {
+std::string huffmanDecoding(const CompressedData &data) {
+  if (data.totalBitCount == 0 || data.freqTable.empty())
     return "";
-  }
 
-  // 1. Rebuild the exact same tree
-  Node *root = buildHuffmanTree(freq);
-  std::string decoded_output = "";
-  Node *current = root;
+  Node *root = buildHuffmanTree(data.freqTable);
+  std::string decoded = "";
 
-  // 2. Special case: Single unique character
+  // --- CRITICAL FIX FOR SINGLE CHARACTER CASE ---
   if (!root->left && !root->right) {
-    // If there is only one character, the encoded_message is just '0' repeated
-    // freq[root->ch] tells us how many times to repeat it
-    return std::string(freq[root->ch], root->ch);
+    // There is only one unique character.
+    // We know how many times it repeats from the frequency table.
+    decoded = std::string(data.freqTable.begin()->second, root->ch);
+    deleteTree(root);
+    return decoded;
   }
+  // ----------------------------------------------
 
-  // 3. Traverse bits
-  for (char bit : encoded_message) {
-    if (bit == '0') {
-      current = current->left;
-    } else {
-      current = current->right;
-    }
+  Node *curr = root;
+  uint32_t processedBits = 0;
+  for (uint8_t byte : data.packedBytes) {
+    for (int i = 0; i < 8; ++i) {
+      if (processedBits >= data.totalBitCount)
+        break;
 
-    // If leaf node found
-    if (!current->left && !current->right) {
-      decoded_output += current->ch;
-      current = root; // Go back to start
+      bool bit = (byte >> (7 - i)) & 1;
+      curr = bit ? curr->right : curr->left;
+
+      if (!curr->left && !curr->right) {
+        decoded += curr->ch;
+        curr = root;
+      }
+      processedBits++;
     }
   }
 
   deleteTree(root);
-  return decoded_output;
+  return decoded;
 }
