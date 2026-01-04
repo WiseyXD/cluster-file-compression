@@ -30,6 +30,41 @@ void trim(std::string &s) {
           }));
 }
 
+std::map<char, int> countFrequencies(const std::string &input) {
+  std::map<char, int> freq;
+  for (char c : input)
+    freq[c]++;
+  return freq;
+}
+
+CompressedData huffmanEncoding(const std::string &input,
+                               const std::map<char, int> &globalFreq) {
+
+  Node *root = buildHuffmanTree(globalFreq);
+
+  std::map<char, std::string> codes;
+  generateCode(root, "", codes);
+
+  // 1. Build bit string
+  std::string bitString;
+  for (char c : input) {
+    bitString += codes[c];
+  }
+
+  // 2. Pack bits
+  std::vector<uint8_t> packed = packBits(bitString);
+
+  // 3. Fill CompressedData
+  CompressedData out;
+  out.freqTable = globalFreq;
+  out.packedBytes = packed;
+  out.originalSize = input.size();
+  out.totalBitCount = bitString.size();
+
+  deleteTree(root);
+  return out;
+}
+
 CompressedData huffmanEncoding(std::string s) {
   CompressedData result;
   // Standard cleaning as per your earlier requirements

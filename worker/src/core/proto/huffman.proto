@@ -1,0 +1,20 @@
+
+syntax = "proto3";
+
+message FrequencyEntry {
+  int32 symbol = 1;
+  uint64 count = 2;
+}
+
+message FrequencyTable {
+  repeated FrequencyEntry entries = 1;
+}
+
+message CodeEntry {
+  int32 symbol = 1;
+  string code = 2;
+}
+
+message CodeTable {
+  repeated CodeEntry entries = 1;
+}
