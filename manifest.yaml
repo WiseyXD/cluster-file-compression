@@ -1,0 +1,102 @@
+
+# ---------------- ZooKeeper ----------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      containers:
+        - name: zookeeper
+          image: zookeeper:3.8
+          ports:
+            - containerPort: 2181
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper
+spec:
+  selector:
+    app: zookeeper
+  ports:
+    - port: 2181
+      targetPort: 2181
+
+# ---------------- Worker ----------------
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: huffman-worker
+spec:
+  completions: 2
+  parallelism: 2
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: huffman-worker
+    spec:
+      restartPolicy: Never
+
+      # ⬇️ WAIT FOR ZOOKEEPER
+      initContainers:
+        - name: wait-for-zookeeper
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for ZooKeeper..."
+              until nc -z zookeeper 2181; do
+                sleep 2
+              done
+              echo "ZooKeeper is ready"
+
+      containers:
+        - name: worker
+          image: distributed-huffman:latest
+          imagePullPolicy: IfNotPresent
+
+# ---------------- API ----------------
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: huffman-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: huffman-api
+  template:
+    metadata:
+      labels:
+        app: huffman-api
+    spec:
+      containers:
+        - name: api
+          image: huffman-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: huffman-api
+spec:
+  selector:
+    app: huffman-api
+  ports:
+    - port: 8080
+      targetPort: 8080
