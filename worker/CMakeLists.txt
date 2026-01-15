@@ -29,6 +29,9 @@ find_package(Protobuf REQUIRED)
 # Ubuntu package: libzookeeper-mt-dev
 find_library(ZOOKEEPER_LIB zookeeper_mt REQUIRED)
 
+# ---- libcurl ----
+find_package(CURL REQUIRED)
+
 # ----------------------------
 # Core sources (shared)
 # ----------------------------
@@ -54,6 +57,7 @@ set(PROTO_SOURCES
 add_executable(app
     ./src/main.cpp
     ./src/core/zk_client.cpp
+    ./src/core/http_client.cpp
     ${CORE_SOURCES}
     ${PROTO_SOURCES}
 )
@@ -61,6 +65,7 @@ add_executable(app
 target_link_libraries(app
     ${ZOOKEEPER_LIB}
     protobuf::libprotobuf
+    CURL::libcurl
 )
 
 target_include_directories(app PRIVATE

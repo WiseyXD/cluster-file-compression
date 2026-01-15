@@ -20,6 +20,8 @@ public:
 
   void createPersistent(const std::string &path, const std::string &data = "");
 
+  void set(const std::string &path, const std::string &data);
+
   std::string get(const std::string &path);
   std::vector<std::string> getChildren(const std::string &path);
   void waitForChildren(const std::string &path, int expected);

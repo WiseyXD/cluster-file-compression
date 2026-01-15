@@ -1,4 +1,20 @@
 
+# ---------------- Input ConfigMap ----------------
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: huffman-input
+data:
+  input.txt: |
+    The binomial coefficient is a fundamental concept in combinatorics and probability theory.
+    It represents the number of ways to choose k elements from a set of n elements without regard to order.
+    The formula is: n! / (k! * (n-k)!)
+    This text demonstrates distributed Huffman compression across multiple worker nodes.
+    Each worker counts character frequencies locally, then they synchronize via ZooKeeper.
+    A leader merges all frequency tables, and every worker uses the same Huffman tree for encoding.
+    Compression efficiency depends on character frequency distribution in the input text.
+
+---
 # ---------------- ZooKeeper ----------------
 apiVersion: apps/v1
 kind: Deployment
@@ -48,7 +64,7 @@ spec:
     spec:
       restartPolicy: Never
 
-      # ⬇️ WAIT FOR ZOOKEEPER
+      # ⬇️ WAIT FOR ZOOKEEPER AND API
       initContainers:
         - name: wait-for-zookeeper
           image: busybox
@@ -61,11 +77,30 @@ spec:
                 sleep 2
               done
               echo "ZooKeeper is ready"
+        - name: wait-for-api
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for API..."
+              until nc -z huffman-api 8080; do
+                sleep 2
+              done
+              echo "API is ready"
 
       containers:
         - name: worker
           image: distributed-huffman:latest
           imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: input-volume
+              mountPath: /data
+
+      volumes:
+        - name: input-volume
+          configMap:
+            name: huffman-input
 
 # ---------------- API ----------------
 ---
@@ -89,6 +124,12 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
+          volumeMounts:
+            - name: data-volume
+              mountPath: /data
+      volumes:
+        - name: data-volume
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service

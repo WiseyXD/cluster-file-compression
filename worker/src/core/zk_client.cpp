@@ -25,6 +25,10 @@ void ZkClient::createPersistent(const std::string &path,
              0, nullptr, 0);
 }
 
+void ZkClient::set(const std::string &path, const std::string &data) {
+  zoo_set(zh, path.c_str(), data.data(), data.size(), -1);
+}
+
 std::string ZkClient::createEphemeralSequential(const std::string &path,
                                                 const std::string &data) {
   char buffer[512];

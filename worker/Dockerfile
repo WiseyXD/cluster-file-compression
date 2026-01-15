@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     zookeeper \
     protobuf-compiler \
     libprotobuf-dev \
+    libcurl4-openssl-dev \
     git \
     && rm -rf /var/lib/apt/lists/*
 
